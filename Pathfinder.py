@@ -11,6 +11,7 @@ class ButtonVertex():
         self.button_obj = Button(master, command = self._performStep, width=2, height=1, bg='papaya whip')
         self.position = position
         self.adjacent = []
+        self.wall_changed = False
         self.wall = 0
         self.start = 0
         self.goal = 0
@@ -26,7 +27,13 @@ class ButtonVertex():
             self.changeWall()
         else:
             pass
-            
+        
+    def mouse_entered(self):
+        # This function allows for click and drag creation of walls.
+        if self.wall_changed == False:
+            self.changeWall()
+            self.wall_changed = True
+        
     def createStart(self):
         # Assigns the start position and colors the start red.
         global start
@@ -81,23 +88,47 @@ class ButtonVertex():
 
 
 def nextStep():
-    # This changes the label on the GUI dependant on the current step. When the third step is reached, it avctivates the BFS.
+    # This changes the label on the GUI dependant on the current step. When the third step is reached, it activates the BFS.
     global step
     global label
     step+=1
+    
     if step == 1:
         label.configure(text='Now select the goal!')
     elif step == 2:
         label.configure(text='Now make some walls.')
     else:
-        label.configure(text='Finding the best route...')
+        
         global start
         global goal
+        label.configure(text='Finding the best route...')
         path = BFS(start, goal)
-        colorPath(path)
+        if path != None:
+            label.configure(text='Found a path!')
+            colorPath(path)
+        else:
+            label.configure(text='I was not able to find a path :(')
 
 
 
+def mouse_up(event):
+    # <B1-Motion> constantly returns a value. This makes sure the buttons aren't continuously triggered.
+    for button in vertexList:
+        vertexList[button].wall_changed = False
+
+        
+        
+def mouse_motion(event):
+    global frame1
+    global step
+    if step == 2:
+        for button in vertexList:
+            if frame1.winfo_containing(event.x_root, event.y_root) is vertexList[button].button_obj:
+                vertexList[button].mouse_entered()
+                root.update()
+                
+                
+                
 def colorPath(path):
     for node in path:
         vertexList[node].button_obj.configure(bg='green')
@@ -163,6 +194,9 @@ for row in range(rows):
                
         vertexList[(row, column)] = ButtonVertex(master=frame1, position =(row, column))
         vertexList[(row, column)].button_obj.grid(row=row, column=column)
+        
+frame1.bind_all("<ButtonRelease-1>", mouse_up)
+frame1.bind_all("<B1-Motion>", mouse_motion)
         
 frame1.pack()
 
