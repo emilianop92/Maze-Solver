@@ -86,8 +86,7 @@ class ButtonVertex():
     def adjacentStartDists(self, vertexList):
         for node in self.adjacent:
             node = vertexList[node]
-            dist = round(((node.position[0]-self.position[0]) **
-                          2+(node.position[1]-self.position[1])**2)**0.5, 3)
+            dist = round(((node.position[0]-self.position[0]) **2+(node.position[1]-self.position[1])**2)**0.5, 3)
             node.start_dist = min(node.start_dist, self.start_dist + dist)
 
     def __str__(self):
